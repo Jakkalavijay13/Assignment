@@ -1,0 +1,62 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <unordered_map>
+
+using namespace std;
+
+int networkDelayTime(vector<vector<int>>& times, int n, int k) {
+    // Create an adjacency list to represent the graph
+    unordered_map<int, vector<pair<int, int>>> graph;
+    for (auto& time : times) {
+        graph[time[0]].push_back({time[1], time[2]});
+    }
+    
+    // Create a min-heap to store vertices with their distances
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
+    
+    // Create a distance map to store minimum distances from source vertex to each vertex
+    unordered_map<int, int> dist;
+    
+    // Push the source vertex k to heap and set its distance to 0
+    pq.push({0, k});
+    dist[k] = 0;
+    
+    // Dijkstra's algorithm
+    while (!pq.empty()) {
+        int curr = pq.top().second;
+        int curr_dist = pq.top().first;
+        pq.pop();
+        
+        // Update distance of all adjacent vertices
+        for (auto& neighbor : graph[curr]) {
+            int neighbor_id = neighbor.first;
+            int neighbor_dist = neighbor.second;
+            
+            if (!dist.count(neighbor_id) || curr_dist + neighbor_dist < dist[neighbor_id]) {
+                dist[neighbor_id] = curr_dist + neighbor_dist;
+                pq.push({dist[neighbor_id], neighbor_id});
+            }
+        }
+    }
+    
+    // Check if all vertices are reached
+    if (dist.size() != n) {
+        return -1;
+    }
+    
+    // Return the maximum distance
+    int max_time = 0;
+    for (auto& p : dist) {
+        max_time = max(max_time, p.second);
+    }
+    return max_time;
+}
+
+int main() {
+    vector<vector<int>> times = {{2,1,1},{2,3,1},{3,4,1}};
+    int n = 4;
+    int k = 2;
+    cout << networkDelayTime(times, n, k) << endl;  // Output: 2
+    return 0;
+}
